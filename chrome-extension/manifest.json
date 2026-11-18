@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Contexa Context Connector",
+  "version": "0.3.0",
+  "description": "Streams approved browser research and workflow tabs to your Contexa workspace.",
+  "permissions": ["tabs", "storage", "alarms"],
+  "host_permissions": ["http://127.0.0.1:*/*", "http://localhost:*/*", "https://*/*"],
+  "background": {
+    "service_worker": "service-worker.js",
+    "type": "module"
+  },
+  "options_page": "options.html",
+  "action": {
+    "default_title": "Contexa Connector",
+    "default_popup": "popup.html"
+  }
+}

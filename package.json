@@ -1,0 +1,52 @@
+{
+  "name": "contexa",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "start": "node backend/server.js",
+    "server": "node backend/server.js",
+    "build": "vite build",
+    "preview": "vite preview",
+    "discord": "node connectors/discord/bot.js",
+    "telegram": "node connectors/telegram/bot.js",
+    "migrate:legacy": "node scripts/migrate-legacy.js",
+    "test": "node scripts/run-tests.js",
+    "test:unit": "node scripts/run-tests.js tests/privacy.test.js tests/candidate.test.js tests/ingest.test.js tests/matching-evaluation.test.js tests/error.test.js tests/runtime.test.js",
+    "test:integration": "node scripts/run-tests.js tests/integration.test.js tests/security.test.js tests/queue.test.js tests/smoke.test.js tests/preview.test.js",
+    "evaluate": "node scripts/evaluate-matching.js",
+    "preview:demo": "node scripts/preview.js",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "check": "node scripts/check-syntax.js",
+    "connectors:package": "python3 scripts/package-connectors.py",
+    "check:repository": "node scripts/check-repository.js",
+    "db:check": "node scripts/check_db.js",
+    "dev:all": "node scripts/develop.js"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1",
+    "d3-force": "3.0.0",
+    "discord.js": "14.27.0",
+    "dotenv": "17.4.2",
+    "express": "5.3.0",
+    "express-rate-limit": "8.7.1",
+    "google-auth-library": "11.3.1",
+    "helmet": "8.3.0",
+    "pg": "8.23.1",
+    "prisma": "7.10.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "6.1.2",
+    "async-exit-hook": "2.0.1",
+    "embedded-postgres": "18.4.0-beta.17",
+    "vite": "8.3.4"
+  },
+  "engines": {
+    "node": ">=22.12"
+  }
+}

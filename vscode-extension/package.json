@@ -1,0 +1,57 @@
+{
+  "name": "contexa-vscode-connector",
+  "displayName": "Contexa Context Connector",
+  "description": "Sends approved VS Code metadata to a local Contexa workspace.",
+  "version": "0.3.0",
+  "publisher": "contexa-local",
+  "type": "commonjs",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Contexa",
+      "properties": {
+        "contexa.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow VS Code metadata collection."
+        },
+        "contexa.apiBase": {
+          "type": "string",
+          "default": "http://127.0.0.1:4000",
+          "description": "Contexa API address."
+        },
+        "contexa.sessionToken": {
+          "type": "string",
+          "default": "",
+          "description": "Legacy connector token. Use Contexa: Pair Workspace to store new tokens in SecretStorage."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "contexa.pair",
+        "title": "Contexa: Pair Workspace"
+      },
+      {
+        "command": "contexa.setDeviceToken",
+        "title": "Contexa: Set Device Token"
+      }
+    ]
+  },
+  "scripts": {
+    "package": "npx @vscode/vsce package"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "latest"
+  }
+}

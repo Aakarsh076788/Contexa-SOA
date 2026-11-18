@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contexa Connector</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="popup-shell">
+    <!-- Header -->
+    <header class="popup-header">
+      <div class="brand">
+        <div class="logo">C</div>
+        <div>
+          <strong>Contexa</strong>
+          <span id="headerSubtitle">Browser Memory</span>
+        </div>
+      </div>
+      <div id="statusPill" class="status-pill off">
+        <i class="dot"></i>
+        <span id="statusText">Disconnected</span>
+      </div>
+    </header>
+
+    <!-- State 1: Unpaired (6-Digit Netflix Pairing) -->
+    <div id="unpairedView" class="view-panel">
+      <div class="pair-hero">
+        <div class="pair-icon">⚡</div>
+        <h3>Pair your browser</h3>
+        <p>Enter the 6-character code shown on your Contexa website to link this browser instantly.</p>
+      </div>
+
+      <div class="code-inputs-container">
+        <input type="text" class="code-box" maxlength="1" autofocus />
+        <input type="text" class="code-box" maxlength="1" />
+        <input type="text" class="code-box" maxlength="1" />
+        <span class="code-dash">-</span>
+        <input type="text" class="code-box" maxlength="1" />
+        <input type="text" class="code-box" maxlength="1" />
+        <input type="text" class="code-box" maxlength="1" />
+      </div>
+
+      <div id="pairFeedback" class="feedback-msg"></div>
+
+      <button type="button" id="manualToggleBtn" class="link-btn">
+        Advanced / Manual Server URL ⚙️
+      </button>
+
+      <div id="manualConfigSection" class="manual-section hidden">
+        <label for="apiBase">Server URL</label>
+        <input type="url" id="apiBase" placeholder="http://127.0.0.1:4000" />
+      </div>
+    </div>
+
+    <!-- State 2: Paired & Active -->
+    <div id="pairedView" class="view-panel hidden">
+      <div class="active-banner">
+        <div class="active-pulse"></div>
+        <div>
+          <strong>Connected & Streaming</strong>
+          <small id="connectedInfo">Linked to your Contexa workspace</small>
+        </div>
+      </div>
+
+      <div class="toggle-card">
+        <div class="toggle-info">
+          <strong>Tab & Research Tracking</strong>
+          <small>Auto-correlate active tabs with work</small>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="enabledSwitch" />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <button type="button" id="disconnectBtn" class="danger-link-btn">
+        Disconnect & Re-pair
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <footer class="popup-footer">
+      <span>🔒 Metadata only · Never collects passwords or incognito tabs</span>
+    </footer>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

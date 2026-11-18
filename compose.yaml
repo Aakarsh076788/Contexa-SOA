@@ -1,0 +1,20 @@
+# Local development database only. Credentials here are intentionally local.
+services:
+  database:
+    image: postgres:17.9-bookworm
+    environment:
+      POSTGRES_USER: contexa
+      POSTGRES_PASSWORD: contexa
+      POSTGRES_DB: contexa
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - contexa_dev_database:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U contexa -d contexa"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+volumes:
+  contexa_dev_database:

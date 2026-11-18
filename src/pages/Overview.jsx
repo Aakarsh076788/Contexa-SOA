@@ -1,0 +1,22 @@
+import { useEffect, useState } from 'react';
+import { requestApi, evidenceLabel } from '../lib/api.js';
+export default function Overview({ context, contexts = [], events = [], counts, connectors = [], token, onChanged, onResume, onNavigate }) {
+  const [note, setNote] = useState(context?.sessionNote || '');
+  const [nextAction, setNextAction] = useState(context?.nextAction || '');
+  const [notice, setNotice] = useState('');
+  const [busy, setBusy] = useState(false);
+  useEffect(() => { setNote(context?.sessionNote || ''); setNextAction(context?.nextAction || ''); }, [context?.id]);
+  const recent = events.filter(x => x.contextId === context?.id).slice(0, 5);
+  const unassigned = counts?.inbox ?? events.filter(x => !x.contextId && x.type !== 'dismissed' && x.kind !== 'DIAGNOSTIC').length;
+  const resources = [...new Map(recent.filter(x => x.href).map(x => [x.href, x])).values()];
+  const save = async e => {
+    e.preventDefault(); setBusy(true);
+    try { await requestApi(`/api/contexts/${context.id}/note`, { token, method: 'PUT', body: { note, nextAction } }); await onChanged(); setNotice('Your next session is ready.'); }
+    catch (err) { setNotice(err.message); } finally { setBusy(false); }
+  };
+  return <div className="resume-home">
+    {!context && <section className="onboarding-card"><p className="eyebrow">YOUR FIRST WORK THREAD</p><h2>Make tomorrow easier to start.</h2><p>Connect a tool, capture your work, then save the next step.</p><ol><li><strong>Connect Chrome or VS Code</strong><span>Choose the tools you want to capture.</span></li><li><strong>Capture your first activity</strong><span>Open a research page or save a file.</span></li><li><strong>Review and resume</strong><span>Assign an activity in your inbox and leave a note.</span></li></ol><div className="resume-actions"><button className="primary-action" onClick={() => onNavigate('Connectors')}>Connect a tool ↗</button><button onClick={() => onNavigate('Inbox')}>Review inbox ({unassigned})</button><button onClick={() => onNavigate('Contexts')}>Create a context</button></div><p>{connectors.filter(x => x.connected).length} tools enabled · {counts?.events ?? events.length} captured activities</p></section>}
+    {context && <section className="resume-card"><div className="resume-card-heading"><div><p className="eyebrow">PICK UP WHERE YOU LEFT OFF</p><h2>{context.name}</h2><p>{context.topic}</p><div className="resume-source-list" aria-label="Sources in this context">{context.sources?.map(source => <span key={source}><i className={source} aria-hidden="true" />{{ chrome: 'Chrome', vscode: 'VS Code', github: 'GitHub', discord: 'Discord', telegram: 'Telegram' }[source] || source}</span>)}</div></div><span className="stat-pill">{evidenceLabel(context.confidence)}</span></div><div className="resume-columns"><div><p className="eyebrow">LAST MEANINGFUL ACTIVITY</p><h3>{recent[0]?.title || 'No activity assigned yet'}</h3><p>{recent[0]?.detail || 'Add activity from your inbox to build this work trail.'}</p><p className="muted">{recent[0] && new Date(recent[0].createdAt).toLocaleString()}</p><div className="resume-actions"><button className="primary-action" onClick={() => onResume(context.id)}>Continue this task ↗</button><button onClick={() => onNavigate('Inbox')}>Review inbox ({unassigned})</button></div><h3>Resources to revisit</h3>{resources.length ? <ul className="resource-list">{resources.map(resource => <li key={resource.href}><a href={resource.href} target="_blank" rel="noopener noreferrer">{resource.title} ↗</a></li>)}</ul> : <p className="muted">Linked research will appear here as you capture it.</p>}</div><form onSubmit={save} className="resume-note"><label>Note for your next session<textarea maxLength={2000} value={note} onChange={e => setNote(e.target.value)} placeholder="What did you learn? Where did you stop?" /></label><label>Next action<input maxLength={300} value={nextAction} onChange={e => setNextAction(e.target.value)} placeholder="One concrete step to continue" /></label><button disabled={busy}>{busy ? 'Saving…' : 'Save for next time'}</button>{notice && <p role="status">{notice}</p>}</form></div></section>}
+    {contexts.length > 1 && <section className="other-contexts"><h2>Other work threads</h2><div>{contexts.filter(x => x.id !== context?.id && x.state !== 'ARCHIVED').slice(0, 4).map(item => <button key={item.id} onClick={() => onResume(item.id)}><strong>{item.name}</strong><span>{item.nextAction}</span></button>)}</div></section>}
+  </div>;
+}

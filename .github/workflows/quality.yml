@@ -1,0 +1,27 @@
+name: Quality
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: postgresql://build:build@127.0.0.1:5432/build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --include=dev
+      - run: npm run db:generate
+      - run: npm run check
+      - run: npm test
+      - run: npm run build
+      - run: npm run evaluate
+      - run: npm audit --audit-level=high
+      - name: Reject tracked private runtime files
+        run: node scripts/check-repository.js

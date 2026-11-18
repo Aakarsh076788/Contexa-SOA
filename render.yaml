@@ -1,0 +1,32 @@
+# Paid single-instance beta. Review current pricing before creating resources.
+databases:
+  - name: contexa-db
+    plan: 0.5c-1g
+    region: singapore
+    databaseName: contexa
+    user: contexa
+    ipAllowList: []
+services:
+  - type: web
+    name: contexa
+    runtime: docker
+    plan: 0.5c-512mb
+    region: singapore
+    numInstances: 1
+    healthCheckPath: /api/ready
+    preDeployCommand: npm run db:migrate
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: contexa-db
+          property: connectionString
+      - key: CONTEXA_SECRET_KEY
+        sync: false
+      - key: PUBLIC_ORIGIN
+        sync: false
+      - key: HOST
+        value: 0.0.0.0
+      - key: NODE_ENV
+        value: production
+      - key: TRUST_PROXY_HOPS
+        value: "1"

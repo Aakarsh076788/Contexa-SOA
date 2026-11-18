@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+dist/
+build/
+
+# Logs & temp
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+*.tmp
+
+# Large backups
+backups/*.tar.gz
+backups/*.zip
+
+# IDEs
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Local credentials, data and development archives
+.env
+.env.*
+!.env.example
+connectors/discord/servers.json
+connectors/telegram/chats.json
+backend/data/*.json
+node_modules.original.local/
+revert_backup/
+scratch/
+ml/__pycache__/
+.venv/
+.local/
+backups/*snapshot*.json
+!vscode-extension/.vscode/
+!vscode-extension/.vscode/launch.json
+# Encrypted connector delivery buffers
+connectors/*/delivery.queue
+connectors/*/delivery.queue.tmp

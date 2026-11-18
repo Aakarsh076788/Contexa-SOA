@@ -1,0 +1,219 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id             String      @id @default(uuid())
+  name           String      @default("Contexa user")
+  email          String      @unique
+  password       String
+  role           String      @default("user")
+  connectorToken String?     @unique
+  createdAt      DateTime    @default(now())
+  workspace      Workspace?
+  sessions       Session[]
+  recoveries     PasswordRecovery[]
+  devices        DeviceCredential[]
+  pairingCodes   PairingCode[]
+}
+
+model Session {
+  id        String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}
+
+model Workspace {
+  id         String      @id @default(uuid())
+  userId     String      @unique
+  user       User        @relation(fields: [userId], references: [id])
+  settings   Json?
+  connectors Connector[]
+  contexts   Context[]
+  devices DeviceCredential[]
+  pairingCodes PairingCode[]
+  ingestionJobs IngestionJob[]
+}
+
+model Connector {
+  id          String    @id @default(uuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  source      String    // chrome, vscode, discord, github
+  transport   String
+  connected   Boolean   @default(false)
+  scopes      String[]
+  lastSyncAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@unique([workspaceId, source])
+}
+
+model Context {
+  id          String      @id @default(uuid())
+  workspaceId String
+  workspace   Workspace   @relation(fields: [workspaceId], references: [id])
+  name        String
+  topic       String
+  description String?
+  state       String      // INVESTIGATION, IMPLEMENTATION, TESTING, REVIEW, COMPLETED
+  confidence  Int         @default(0)
+  tint        String?
+  sources     String[]    @default([])
+  sessionNote String      @default("")
+  nextAction  String      @default("Review the related work and choose the next action.")
+  embedding   Float[]
+  events      Event[]
+  entities    Entity[]
+  versions    Version[]
+  relationships Relationship[]
+  branches    Branch[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([workspaceId, updatedAt])
+}
+
+model Event {
+  id        String   @id @default(uuid())
+  workspaceId String
+  contextId String?
+  context   Context? @relation(fields: [contextId], references: [id], onDelete: SetNull)
+  source    String
+  type      String
+  kind      String
+  title     String
+  detail    String?
+  entityId  String?
+  entity    Entity?  @relation(fields: [entityId], references: [id])
+  embedding Float[]
+  createdAt DateTime @default(now())
+
+  @@index([workspaceId, createdAt])
+  @@index([workspaceId, contextId])
+}
+
+model Entity {
+  id        String   @id @default(uuid())
+  workspaceId String
+  contextId String?
+  context   Context? @relation(fields: [contextId], references: [id], onDelete: SetNull)
+  source    String
+  type      String
+  label     String
+  href      String?
+  metadata  Json?
+  events    Event[]
+  createdAt DateTime @default(now())
+
+  @@index([workspaceId, contextId])
+}
+
+model Relationship {
+  id         String   @id @default(uuid())
+  contextId  String
+  context    Context  @relation(fields: [contextId], references: [id], onDelete: Cascade)
+  fromEntity String
+  toEntity   String
+  type       String
+  reason     String
+  confidence Int
+  createdAt  DateTime @default(now())
+
+  @@index([contextId])
+}
+
+model Version {
+  id          String   @id @default(uuid())
+  contextId   String
+  context     Context  @relation(fields: [contextId], references: [id], onDelete: Cascade)
+  number      Int
+  label       String
+  summary     String?
+  state       String
+  eventIds    String[] // Array of event UUIDs included in this version
+  entityIds   String[] // Array of entity UUIDs included in this version
+  branchId    String?
+  branch      Branch?  @relation(fields: [branchId], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@index([contextId, number])
+}
+
+model Branch {
+  id          String    @id @default(uuid())
+  contextId   String
+  context     Context   @relation(fields: [contextId], references: [id], onDelete: Cascade)
+  name        String
+  baseVersion Int
+  status      String    @default("active")
+  versions    Version[]
+  createdAt   DateTime  @default(now())
+
+  @@index([contextId])
+}
+
+model DeviceCredential {
+  id          String @id @default(uuid())
+  userId      String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspaceId String
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  source      String
+  label       String
+  tokenHash   String @unique
+  createdAt   DateTime @default(now())
+  lastUsedAt  DateTime?
+  revokedAt   DateTime?
+  @@index([workspaceId, createdAt])
+}
+
+model PairingCode {
+  code        String @id
+  userId      String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspaceId String
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  source      String
+  expiresAt   DateTime
+  pairedAt    DateTime?
+  @@index([expiresAt])
+}
+
+model IngestionJob {
+  id String @id
+  workspaceId String
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  fingerprint String
+  payload Json
+  status String @default("pending")
+  attempts Int @default(0)
+  availableAt DateTime @default(now())
+  lockedAt DateTime?
+  leaseToken String?
+  result Json?
+  lastError String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([workspaceId, fingerprint])
+  @@index([status, availableAt])
+  @@index([workspaceId, createdAt])
+}
+
+model PasswordRecovery {
+  id        String   @id
+  userId    String
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  usedAt    DateTime?
+  @@index([userId, createdAt])
+  @@index([expiresAt])
+}
